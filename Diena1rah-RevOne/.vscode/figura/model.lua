@@ -316,7 +316,7 @@ function CustomModelPart.setOverlay(vector) end
 
 ---Sets the parent type of the part.
 ---@param parent ParentType
-function CustomModelPart.setParentType(parent) end
+function CustomModelPart.setParentType(parent) end  
 
 ---Sets the part's pivot point.
 ---@param vector VectorPos

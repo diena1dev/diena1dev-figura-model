@@ -3,8 +3,6 @@
 
 -- ========== Avatar Variables ========== --
 
-local PlayerPosition
-
 -- Robot Part Variables
 local robot = models.Diena1rah.Robot
 local rarmrobot = models.Diena1rah.Robot.RightArmRobot
@@ -43,6 +41,9 @@ local axe = models.Diena1rah.Body.Torso.Axe
 local goggles = models.Diena1rah.Body.Head.Goggles
 local rope = models.Diena1rah.Body.Head.GogglesRope
 
+-- World Displays
+worldScreen = models.Diena1rah.cube
+
 -- ========== Functions ========== --
 
 -- Hiding Vanilla Armor and Models
@@ -65,8 +66,8 @@ larm:setParentType("LeftArm")
 rarm:setParentType("RightArm")
 lleg:setParentType("LeftLeg")
 rleg:setParentType("RightLeg")
-models.Diena1rah.cube:setParentType("World")
-models.Diena1rah.cube:setPos(15, 0, 0)
+worldScreen:setParentType("World")
+worldScreen:setPos(15, 0, 0)
 
 -- Animations! Template used here, going to custom-build functions, later.
 function events.tick()
@@ -132,18 +133,66 @@ function toggleRobot()
   end
 end
 
--- Move Display World Position :D
-function pings.MoveScreen()
+-- = WorldScreen Functions = --
+
+-- Move Display World Position, to the player :D
+function pings.MoveScreenToPlayer()
   if player:isLoaded()
   then
     PlayerPos = player:getPos()
     PlayerRot = player:getRot()
-    models.Diena1rah.cube:setPos(PlayerPos*16):setRot(PlayerRot.x, PlayerRot.y*-1, PlayerRot.z)
-    print(PlayerPos, PlayerRot)
+    worldScreen:setPos(PlayerPos*16):setRot(PlayerRot.x, PlayerRot.y*-1, PlayerRot.z)
   end
 end
 
+-- X Axis Precise Movement
+function moveScreenPreciseX(dir)
+  screenPos = worldScreen:getPos()
+  if dir == 1 then worldScreen:setPos(screenPos.x+1, screenPos.y, screenPos.z) end
+  if dir == -1 then worldScreen:setPos(screenPos.x-1, screenPos.y, screenPos.z) end
+  screenPos = worldScreen:getPos()
+end
 
+-- Y Axis Precise Movement
+function moveScreenPreciseY(dir)
+  screenPos = worldScreen:getPos()
+  if dir == 1 then worldScreen:setPos(screenPos.x, screenPos.y+1, screenPos.z) end
+  if dir == -1 then worldScreen:setPos(screenPos.x, screenPos.y-1, screenPos.z) end
+  screenPos = worldScreen:getPos()
+end
+
+-- Z Axis Precise Movement
+function moveScreenPreciseZ(dir)
+  screenPos = worldScreen:getPos()
+  if dir == 1 then worldScreen:setPos(screenPos.x, screenPos.y, screenPos.z+1) end
+  if dir == -1 then worldScreen:setPos(screenPos.x, screenPos.y, screenPos.z-1) end
+  screenPos = worldScreen:getPos()
+end
+
+
+--WIP, ignore for now
+function moveScreenPreciseYaw()
+
+end
+
+function moveSceenPrecisePitch()
+
+end
+
+function moveSCreenPreciseRoll()
+
+end
+
+-- Setting screen scale :3
+function setScreenScale(dir)
+  screenScale = worldScreen:getScale()
+  if dir == 1 then worldScreen:setScale(screenScale+1) end
+  if dir == -1 then worldScreen:setScale(screenScale-1) end
+  screenScale = worldScreen:getScale()
+end
+
+-- Push the Client-Side screen to other Figura Users, this prevents the movements from spam pinging the Figura Backend
+function pings.updateScreenPosition() screenScale = worldScreen:getScale() screenPos = worldScreen:getPos() worldScreen:setScale(screenScale) worldScreen:setPos(screenPos) end
 
 -- Note: Needed for rendering correctly behind transparent objects: ':setPrimaryRenderType("CUTOUT")'
 
@@ -152,33 +201,21 @@ end
 
 -- Action Wheel Creation
 local mainPage = action_wheel:newPage()
+local secondPage = action_wheel:newPage()
 action_wheel:setPage(mainPage)
 
--- Action Wheel Entry: Goggles
-local action = mainPage:newAction()
-    :title("Goggles")
-    :item("minecraft:golden_helmet")
-    :hoverColor(120, 70, 70)
-    :onLeftClick(pings.toggleGoggles)
+-- Action Wheel Entries
+mainPage:newAction():title("Goggles"):item("minecraft:golden_helmet"):hoverColor(120, 70, 70):onLeftClick(pings.toggleGoggles)
+mainPage:newAction():title("Model"):item("minecraft:player_head"):hoverColor(130, 130, 130):onLeftClick(toggleModel)
+mainPage:newAction():title("Robot"):item("minecraft:iron_block"):hoverColor(130, 130, 130):onLeftClick(toggleRobot)
+mainPage:newAction():title("Screen Page"):item("minecraft:oak_sign"):onLeftClick(function () action_wheel:setPage(secondPage) end)
+secondPage:newAction():title("MoveScreenX"):item("minecraft:red_concrete"):onScroll(moveScreenPreciseX)
+secondPage:newAction():title("MoveScreenZ"):item("minecraft:blue_concrete"):onScroll(moveScreenPreciseZ)
+secondPage:newAction():title("MoveScreenY"):item("minecraft:lime_concrete"):onScroll(moveScreenPreciseY)
+secondPage:newAction():title("PushChanges/ToPlayer"):item("minecraft:arrow"):hoverColor(130, 130, 130):onLeftClick(pings.updateScreenPosition):onRightClick(pings.MoveScreenToPlayer)
+secondPage:newAction():title("scaletest"):onScroll(setScreenScale)
+secondPage:newAction():title("Back"):item("minecraft:emerald_block"):onLeftClick(function () action_wheel:setPage(mainPage) end)
 
-local action2 = mainPage:newAction()
-    :title("Model")
-    :item("minecraft:player_head")
-    :hoverColor(130, 130, 130)
-    :onLeftClick(toggleModel)
-    
-local action3 = mainPage:newAction()
-    :title("Robot")
-    :item("minecraft:player_head")
-    :hoverColor(130, 130, 130)
-    :onLeftClick(toggleRobot)
-
-local action4 = mainPage:newAction()
-:title("Move Screen")
-:item("minecraft:redstone_block")
-:hoverColor(130, 130, 130)
-:onLeftClick(pings.MoveScreen)
-        
 -- ========== Misc. Functions and Features ========== --
 
 -- Nameplate/List/Chat Formatting Functions

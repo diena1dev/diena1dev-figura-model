@@ -1523,7 +1523,7 @@ function BlockState.emitsRedstonePower() end
 
 ---Returns the blast resistance of this block.
 ---@return number
-function BlockState.getBlastResistance() end
+function BlockState.BlastResistance() end
 
 ---Returns a table with all the block tags this block is included in.
 ---@return string[]

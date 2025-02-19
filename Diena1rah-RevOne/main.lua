@@ -80,9 +80,33 @@ function events.tick()
 
 
   --animations.Diena1rah.idle:setPlaying(not walking and not crouching)
- animations.Diena1rah.Walking:setPlaying(walking and not crouching and not sprinting)
+  --animations.Diena1rah.Walking:setPlaying(walking and not crouching and not sprinting)
   --animations.Diena1rah.sprint:setPlaying(sprinting and not crouching)
- -- animation.Diena1rah.crouch:setPlaying(crouching)
+  --animation.Diena1rah.crouch:setPlaying(crouching)
+
+  tickIncrement = world:getTime()
+
+  if lastPlayerKeypressTime == tickIncrement
+  then
+    
+  end
+end
+
+-- WIP: AFK Status
+
+-- So, this function has to detect whenever the player stops pressing any keys, then compare that to world ticks, and when a given amount of ticks pass, send a
+-- signal to say: "Hey, this guy is AFK, change his status"
+-- So what's needed- Detect Player key-presses, and what tick they were last registered, and then comparing that tick number to a variable with the current *world* tick time.
+--
+
+
+function events.key_press(key, action, modifier)
+    if action ~= 0 or 1 or 2 then -- If no key is pressed, set playerIsAfk to true.
+        playerIsAfk = true
+        lastPlayerKeypressTime = world:getTime()
+    else -- If anything other than no key is pressed, set playerIsAfk to false!
+        playerIsAfk = false
+     end
 end
 
 -- Toggle Figura Model :D
@@ -133,19 +157,35 @@ function toggleRobot()
   end
 end
 
+-- Arm Screen Animation
+screenOn = false
+function pings.activateArmScreen()
+  if screenOn == false
+  then
+    animations.Diena1rah.ScreenRenderBye:stop()
+    animations.Diena1rah.ScreenRender:play()
+    screenOn = true
+  elseif screenOn == true
+  then
+    animations.Diena1rah.ScreenRender:stop()
+    animations.Diena1rah.ScreenRenderBye:play()
+    screenOn = false
+  end
+end
+
 -- = WorldScreen Functions = --
 
 -- Push the Client-Side screen to other Figura Users, this prevents the movements from spam pinging the Figura Backend
-function pings.updateScreenPosition()
-  worldScreen:ToWorldMatrix():apply()
+function pings.screenTask()
+  worldScreen:partToWorldMatrix():apply()
   end
 
 -- Move Display World Position, to the player :D
 function pings.MoveScreenToPlayer()
   if player:isLoaded()
   then
-    PlayerPos = player:getPos()
-    PlayerRot = player:getRot()
+    local PlayerPos = player:getPos()
+    local PlayerRot = player:getRot()
     worldScreen:setPos(PlayerPos*16):setRot(PlayerRot.x, PlayerRot.y*-1, PlayerRot.z)
   end
 end
@@ -222,6 +262,7 @@ mainPage:newAction():title("Goggles"):item("minecraft:golden_helmet"):hoverColor
 mainPage:newAction():title("Model"):item("minecraft:player_head"):hoverColor(130, 130, 130):onLeftClick(toggleModel)
 mainPage:newAction():title("Robot"):item("minecraft:iron_block"):hoverColor(130, 130, 130):onLeftClick(toggleRobot)
 mainPage:newAction():title("Screen Page"):item("minecraft:oak_sign"):onLeftClick(function () action_wheel:setPage(secondPage) end)
+mainPage:newAction():title("testarmscreentoggle"):onLeftClick(pings.activateArmScreen)
 secondPage:newAction():title("MoveScreenX"):item("minecraft:red_concrete"):onScroll(moveScreenPreciseX)
 secondPage:newAction():title("MoveScreenZ"):item("minecraft:blue_concrete"):onScroll(moveScreenPreciseZ)
 secondPage:newAction():title("MoveScreenY"):item("minecraft:lime_concrete"):onScroll(moveScreenPreciseY)

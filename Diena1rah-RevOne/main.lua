@@ -40,6 +40,7 @@ local leyered = models.Diena1rah.Body.Head.LeftEyeRed
 local axe = models.Diena1rah.Body.Torso.Axe
 local goggles = models.Diena1rah.Body.Head.Goggles
 local rope = models.Diena1rah.Body.Head.GogglesRope
+afkthing = models.Diena1rah.afkthing
 
 -- World Displays
 worldScreen = models.Diena1rah.cube
@@ -83,15 +84,16 @@ function events.tick()
   --animations.Diena1rah.Walking:setPlaying(walking and not crouching and not sprinting)
   --animations.Diena1rah.sprint:setPlaying(sprinting and not crouching)
   --animation.Diena1rah.crouch:setPlaying(crouching)
-
-  tickIncrement = world:getTime()
-
-  if lastPlayerKeypressTime == tickIncrement
+  if roundedSeconds == justPrintedSeconds
   then
-    
+  else
+    print(roundedSeconds)
+    justPrintedSeconds = roundedSeconds
   end
-end
-
+  tickIncrement = world:getTime()
+  roundedSeconds = (math.floor(tickIncrement/20+0.5)and math.ceil(tickIncrement/20-0.5))
+  roundedSecondsMinusOne = (math.floor(tickIncrement/20+0.5-1)and math.ceil(tickIncrement/20-0.5-1))
+en
 -- WIP: AFK Status
 
 -- So, this function has to detect whenever the player stops pressing any keys, then compare that to world ticks, and when a given amount of ticks pass, send a
@@ -101,12 +103,14 @@ end
 
 
 function events.key_press(key, action, modifier)
-    if action ~= 0 or 1 or 2 then -- If no key is pressed, set playerIsAfk to true.
+    if action == 0 or 1 or 2 then -- If key is pressed, set playerIsAfk to false.
+    --print(tickIncrement/20/60/60/24) -- seconds -> minutes -> hours -> days
+        playerIsAfk = false
+    elseif action ~= 0 or 1 or 2
+      then -- If anything other than key is not pressed, set playerIsAfk to true!
         playerIsAfk = true
         lastPlayerKeypressTime = world:getTime()
-    else -- If anything other than no key is pressed, set playerIsAfk to false!
-        playerIsAfk = false
-     end
+    end
 end
 
 -- Toggle Figura Model :D

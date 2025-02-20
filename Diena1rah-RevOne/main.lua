@@ -45,6 +45,10 @@ afkthing = models.Diena1rah.afkthing
 -- World Displays
 worldScreen = models.Diena1rah.cube
 
+-- Dependencies for the AFK Display
+tickIncrement = world:getTime()
+getPlayerLastTime = (math.floor(tickIncrement/20+0.5-1)and math.ceil(tickIncrement/20-0.5-1))
+
 -- ========== Functions ========== --
 
 -- Hiding Vanilla Armor and Models
@@ -84,33 +88,6 @@ function events.tick()
   --animations.Diena1rah.Walking:setPlaying(walking and not crouching and not sprinting)
   --animations.Diena1rah.sprint:setPlaying(sprinting and not crouching)
   --animation.Diena1rah.crouch:setPlaying(crouching)
-  if roundedSeconds == justPrintedSeconds
-  then
-  else
-    print(roundedSeconds)
-    justPrintedSeconds = roundedSeconds
-  end
-  tickIncrement = world:getTime()
-  roundedSeconds = (math.floor(tickIncrement/20+0.5)and math.ceil(tickIncrement/20-0.5))
-  roundedSecondsMinusOne = (math.floor(tickIncrement/20+0.5-1)and math.ceil(tickIncrement/20-0.5-1))
-en
--- WIP: AFK Status
-
--- So, this function has to detect whenever the player stops pressing any keys, then compare that to world ticks, and when a given amount of ticks pass, send a
--- signal to say: "Hey, this guy is AFK, change his status"
--- So what's needed- Detect Player key-presses, and what tick they were last registered, and then comparing that tick number to a variable with the current *world* tick time.
---
-
-
-function events.key_press(key, action, modifier)
-    if action == 0 or 1 or 2 then -- If key is pressed, set playerIsAfk to false.
-    --print(tickIncrement/20/60/60/24) -- seconds -> minutes -> hours -> days
-        playerIsAfk = false
-    elseif action ~= 0 or 1 or 2
-      then -- If anything other than key is not pressed, set playerIsAfk to true!
-        playerIsAfk = true
-        lastPlayerKeypressTime = world:getTime()
-    end
 end
 
 -- Toggle Figura Model :D
@@ -147,7 +124,7 @@ function pings.toggleGoggles()
     end
 end
 
--- Toggling Robot!
+-- Toggling Robot, a model i was testing.
 function toggleRobot()
   if robot:getVisible() == false
   then
@@ -175,6 +152,45 @@ function pings.activateArmScreen()
     animations.Diena1rah.ScreenRenderBye:play()
     screenOn = false
   end
+end
+
+-- = AFK Functions = --
+-- WIP: AFK Status
+-- So, this function has to detect whenever the player stops pressing any keys, then compare that to world ticks, and when a given amount of ticks pass, send a
+-- signal to say: "Hey, this guy is AFK, change his status"
+-- So what's needed- Detect Player key-presses, and what tick they were last registered, and then comparing that tick number to a variable with the current *world* tick time.
+-- And now, it WORKS!
+
+function events.tick()
+  -- This is a function to
+  if roundedSeconds ~= justPrintedSeconds
+  then
+    --print(roundedSeconds)
+    justPrintedSeconds = roundedSeconds
+  end
+ 
+  if getPlayerLastTime+15 == roundedSeconds
+  then
+    afkthing:setVisible(true)
+  end
+
+  tickIncrement = world:getTime()
+  roundedSeconds = (math.floor(tickIncrement/20+0.5)and math.ceil(tickIncrement/20-0.5))  
+end
+
+function events.mouse_move(x, y) -- AFK Detection for mouse movement
+  if x or y <= 1 -- If mouse is moved, set afkthing visible to false
+      then
+        afkthing:setVisible(false)
+        getPlayerLastTime = (math.floor(tickIncrement/20+0.5-1)and math.ceil(tickIncrement/20-0.5-1))
+    end
+end
+function events.key_press(key, action, modifier)
+    if action == 0 or 1 or 2 -- If key is pressed, set afkthing visible to false.
+      then
+        afkthing:setVisible(false) -- AFK Detection for keyboard inputs
+        getPlayerLastTime = (math.floor(tickIncrement/20+0.5-1)and math.ceil(tickIncrement/20-0.5-1))
+    end
 end
 
 -- = WorldScreen Functions = --
@@ -251,9 +267,9 @@ function setScreenScale(dir)
   screenScale = worldScreen:getScale()
 end
 
--- Note: Needed for rendering correctly behind transparent objects: ':setPrimaryRenderType("CUTOUT")'
-
+-- =================================== --
 -- ========== Action Wheel! ========== --
+-- =================================== --
 -- The Action Wheel must be below any functions it calls!
 
 -- Action Wheel Creation
